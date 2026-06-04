@@ -5,49 +5,42 @@
 | Column | Description |
 |---|---|
 | ToolID | รหัสเครื่องมือ เช่น EQ-0001 |
-| ToolName | ชื่อเครื่องมือ |
+| Asset Number | เลขครุภัณฑ์ |
+| ToolName | ชื่อภาษาอังกฤษ |
+| ToolThaiName | ชื่อภาษาไทย |
 | Category | หมวดหมู่ |
 | Brand | ยี่ห้อ |
 | Model | รุ่น |
 | SerialNo | Serial number |
-| Location | สถานที่จัดเก็บ |
-| Status | พร้อมใช้งาน / ซ่อมบำรุง / เลิกใช้งาน |
-| ResponsiblePerson | ผู้รับผิดชอบ |
-| PurchaseDate | วันที่ซื้อ |
-| WarrantyExpireDate | วันหมดประกัน |
 | ImageFileID | Google Drive File ID ของรูป |
-| ManualFileID | Google Drive File ID ของคู่มือ |
+| ManualFileID | Google Drive File ID ของคู่มือหรือเอกสาร |
+| Installation Date | วันที่ติดตั้ง |
+| Location | สถานที่จัดเก็บ |
+| Calibration | TRUE / FALSE |
+| Preventive Maintenance | TRUE / FALSE |
+| ResponsiblePerson | ผู้รับผิดชอบ |
+| Service Provider | ผู้ให้บริการ |
+| Status | พร้อมใช้งาน / ซ่อมบำรุง / เลิกใช้งาน |
 | Note | หมายเหตุ |
 | CreatedAt | วันที่สร้าง |
 | UpdatedAt | วันที่แก้ไขล่าสุด |
 
-## MaintenanceRecords
+## ServiceRecords
 
 | Column | Description |
 |---|---|
-| MaintenanceID | รหัสรายการซ่อมบำรุง เช่น MT-0001 |
+| RecordID | รหัสรายการ เช่น SR-0001 |
+| DateTime | วันเวลา ที่ดำเนินการ |
 | ToolID | รหัสเครื่องมือ |
-| Date | วันที่ซ่อมบำรุง |
-| Type | ตรวจเช็ก / ซ่อม / บำรุงรักษา |
-| Description | รายละเอียด |
-| Cost | ค่าใช้จ่าย |
-| Vendor | ผู้ให้บริการหรือบริษัท |
-| NextMaintenanceDate | กำหนดซ่อมบำรุงครั้งถัดไป |
-| FileID | Google Drive File ID ของเอกสาร |
-| CreatedAt | วันที่สร้างรายการ |
-
-## CalibrationRecords
-
-| Column | Description |
-|---|---|
-| CalibrationID | รหัสรายการสอบเทียบ เช่น CAL-0001 |
-| ToolID | รหัสเครื่องมือ |
-| CalibrationDate | วันที่สอบเทียบ |
-| ExpireDate | วันหมดอายุ |
-| Result | Pass / Fail |
-| CertificateNo | เลขที่ใบรับรอง |
-| CertificateFileID | Google Drive File ID ของใบรับรอง |
-| CalibratedBy | หน่วยงานสอบเทียบ |
+| ToolName | ชื่อเครื่องมือ |
+| WorkType | Maintenance / Repair / Calibration / Verification / Other |
+| ProblemReason | ปัญหาที่พบ/เหตุผล |
+| ActionDetail | รายละเอียดการดำเนินการ |
+| PerformedBy | ผู้ดำเนินการ |
+| InspectionResult | ผ่าน / ไม่ผ่าน |
+| ReturnDateTime | วัน เวลา ที่กลับมาใช้งาน |
+| DocumentFileID | Google Drive File ID ของเอกสารแนบ |
+| RecordedBy | ผู้บันทึก |
 | CreatedAt | วันที่สร้างรายการ |
 
 ## Categories

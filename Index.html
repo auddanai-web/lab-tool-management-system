@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fb; color: #1f2937; }
+    header { background: #2563eb; color: white; padding: 18px 28px; }
+    header h1 { margin: 0; font-size: 22px; }
+    main { padding: 24px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tabs button { border: 0; background: white; color: #1f2937; padding: 10px 14px; border-radius: 6px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .tabs button.active { background: #2563eb; color: white; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .card { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 1px 5px rgba(0,0,0,.08); }
+    .card-title { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
+    .card-value { font-size: 30px; font-weight: bold; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    input, select, textarea { padding: 9px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+    textarea { min-height: 72px; }
+    .btn { border: 0; border-radius: 6px; padding: 10px 14px; cursor: pointer; background: #2563eb; color: white; }
+    .btn.secondary { background: #374151; }
+    .btn.light { background: #e5e7eb; color: #111827; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,.08); }
+    th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; vertical-align: top; }
+    th { background: #f9fafb; color: #374151; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .form-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #374151; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal { background: white; border-radius: 8px; width: min(900px, 100%); max-height: 90vh; overflow: auto; padding: 20px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .modal-header h2 { margin: 0; font-size: 20px; }
+    .status { font-size: 13px; color: #6b7280; margin-top: 10px; }
+    .alert-list { display: grid; gap: 10px; }
+    .alert-item { padding: 12px; background: #fff7ed; border-left: 4px solid #f97316; border-radius: 6px; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>ระบบจัดการเครื่องมือห้องปฏิบัติการ</h1>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="active" onclick="showSection('dashboard', this)">Dashboard</button>
+      <button onclick="showSection('tools', this)">รายการเครื่องมือ</button>
+      <button onclick="showSection('maintenance', this)">ซ่อมบำรุง</button>
+      <button onclick="showSection('calibration', this)">สอบเทียบ</button>
+    </div>
+
+    <section id="dashboard" class="section active">
+      <div class="summary-grid">
+        <div class="card"><div class="card-title">เครื่องมือทั้งหมด</div><div id="totalTools" class="card-value">0</div></div>
+        <div class="card"><div class="card-title">พร้อมใช้งาน</div><div id="availableTools" class="card-value">0</div></div>
+        <div class="card"><div class="card-title">ซ่อมบำรุง</div><div id="maintenanceTools" class="card-value">0</div></div>
+        <div class="card"><div class="card-title">เลิกใช้งาน</div><div id="retiredTools" class="card-value">0</div></div>
+      </div>
+
+      <div class="card">
+        <h2>แจ้งเตือน</h2>
+        <div id="alerts" class="alert-list">กำลังโหลด...</div>
+      </div>
+    </section>
+
+    <section id="tools" class="section">
+      <div class="toolbar">
+        <input id="toolSearch" placeholder="ค้นหาชื่อ / รหัส / Serial No" oninput="renderToolsTable()">
+        <select id="statusFilter" onchange="renderToolsTable()">
+          <option value="">ทุกสถานะ</option>
+          <option value="พร้อมใช้งาน">พร้อมใช้งาน</option>
+          <option value="ซ่อมบำรุง">ซ่อมบำรุง</option>
+          <option value="เลิกใช้งาน">เลิกใช้งาน</option>
+        </select>
+        <button class="btn" onclick="openToolModal()">เพิ่มเครื่องมือ</button>
+        <button class="btn light" onclick="loadAll()">รีเฟรช</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>รหัส</th>
+            <th>ชื่อเครื่องมือ</th>
+            <th>หมวดหมู่</th>
+            <th>สถานที่</th>
+            <th>สถานะ</th>
+            <th>ผู้รับผิดชอบ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="toolsTable"></tbody>
+      </table>
+    </section>
+
+    <section id="maintenance" class="section">
+      <div class="card">
+        <h2>บันทึกซ่อมบำรุง</h2>
+        <div class="form-grid">
+          <label>เครื่องมือ<select id="maintenanceToolID"></select></label>
+          <label>วันที่<input id="maintenanceDate" type="date"></label>
+          <label>ประเภท<select id="maintenanceType"><option value="ตรวจเช็ก">ตรวจเช็ก</option><option value="ซ่อม">ซ่อม</option><option value="บำรุงรักษา">บำรุงรักษา</option></select></label>
+          <label>ค่าใช้จ่าย<input id="maintenanceCost" type="number" min="0"></label>
+          <label>ผู้ให้บริการ / บริษัท<input id="maintenanceVendor"></label>
+          <label>กำหนดครั้งถัดไป<input id="nextMaintenanceDate" type="date"></label>
+          <label>File ID เอกสาร<input id="maintenanceFileID"></label>
+          <label>รายละเอียด<textarea id="maintenanceDescription"></textarea></label>
+        </div>
+        <br>
+        <button class="btn" onclick="saveMaintenance()">บันทึกซ่อมบำรุง</button>
+        <div id="maintenanceStatus" class="status"></div>
+      </div>
+    </section>
+
+    <section id="calibration" class="section">
+      <div class="card">
+        <h2>บันทึกสอบเทียบ</h2>
+        <div class="form-grid">
+          <label>เครื่องมือ<select id="calibrationToolID"></select></label>
+          <label>วันที่สอบเทียบ<input id="calibrationDate" type="date"></label>
+          <label>วันหมดอายุ<input id="expireDate" type="date"></label>
+          <label>ผลสอบเทียบ<select id="calibrationResult"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></label>
+          <label>เลขที่ใบรับรอง<input id="certificateNo"></label>
+          <label>File ID ใบรับรอง<input id="certificateFileID"></label>
+          <label>หน่วยงานสอบเทียบ<input id="calibratedBy"></label>
+        </div>
+        <br>
+        <button class="btn" onclick="saveCalibration()">บันทึกสอบเทียบ</button>
+        <div id="calibrationStatus" class="status"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toolModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="toolModalTitle">เพิ่มเครื่องมือ</h2>
+        <button class="btn light" onclick="closeToolModal()">ปิด</button>
+      </div>
+
+      <input id="toolId" type="hidden">
+
+      <div class="form-grid">
+        <label>ชื่อเครื่องมือ<input id="toolName"></label>
+        <label>หมวดหมู่<select id="toolCategory"></select></label>
+        <label>ยี่ห้อ<input id="toolBrand"></label>
+        <label>รุ่น<input id="toolModel"></label>
+        <label>Serial No<input id="toolSerialNo"></label>
+        <label>สถานที่<select id="toolLocation"></select></label>
+        <label>สถานะ<select id="toolStatus"><option value="พร้อมใช้งาน">พร้อมใช้งาน</option><option value="ซ่อมบำรุง">ซ่อมบำรุง</option><option value="เลิกใช้งาน">เลิกใช้งาน</option></select></label>
+        <label>ผู้รับผิดชอบ<input id="responsiblePerson"></label>
+        <label>วันที่ซื้อ<input id="purchaseDate" type="date"></label>
+        <label>วันหมดประกัน<input id="warrantyExpireDate" type="date"></label>
+        <label>Image File ID<input id="imageFileID"></label>
+        <label>Manual File ID<input id="manualFileID"></label>
+        <label>หมายเหตุ<textarea id="toolNote"></textarea></label>
+      </div>
+
+      <br>
+      <button class="btn" onclick="saveTool()">บันทึกเครื่องมือ</button>
+      <div id="toolFormStatus" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    let tools = [];
+    let masterData = { categories: [], locations: [] };
+
+    document.addEventListener('DOMContentLoaded', loadAll);
+
+    function showSection(sectionId, button) {
+      document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+      document.querySelectorAll('.tabs button').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
+      button.classList.add('active');
+    }
+
+    function loadAll() {
+      google.script.run.withSuccessHandler(data => {
+        masterData = data;
+        renderMasterOptions();
+      }).getMasterData();
+
+      google.script.run.withSuccessHandler(data => {
+        tools = data;
+        renderToolsTable();
+        renderToolOptions();
+      }).getTools();
+
+      google.script.run.withSuccessHandler(renderDashboard).getDashboardData();
+    }
+
+    function renderDashboard(data) {
+      document.getElementById('totalTools').textContent = data.totalTools || 0;
+      document.getElementById('availableTools').textContent = data.statusCount['พร้อมใช้งาน'] || 0;
+      document.getElementById('maintenanceTools').textContent = data.statusCount['ซ่อมบำรุง'] || 0;
+      document.getElementById('retiredTools').textContent = data.statusCount['เลิกใช้งาน'] || 0;
+
+      const alerts = [];
+      data.calibrationAlerts.forEach(item => alerts.push('ใบสอบเทียบใกล้หมดอายุ: ' + item.ToolID + ' หมดอายุวันที่ ' + formatDate(item.ExpireDate)));
+      data.maintenanceAlerts.forEach(item => alerts.push('ใกล้กำหนดซ่อมบำรุง: ' + item.ToolID + ' วันที่ ' + formatDate(item.NextMaintenanceDate)));
+
+      document.getElementById('alerts').innerHTML = alerts.length
+        ? alerts.map(text => '<div class="alert-item">' + text + '</div>').join('')
+        : 'ยังไม่มีรายการแจ้งเตือน';
+    }
+
+    function renderToolsTable() {
+      const search = document.getElementById('toolSearch').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = tools.filter(tool => {
+        const text = [tool.ToolID, tool.ToolName, tool.SerialNo, tool.Brand, tool.Model].join(' ').toLowerCase();
+        return (!search || text.includes(search)) && (!status || tool.Status === status);
+      });
+
+      document.getElementById('toolsTable').innerHTML = filtered.map(tool => `
+        <tr>
+          <td>${safe(tool.ToolID)}</td>
+          <td>${safe(tool.ToolName)}</td>
+          <td>${safe(tool.Category)}</td>
+          <td>${safe(tool.Location)}</td>
+          <td>${safe(tool.Status)}</td>
+          <td>${safe(tool.ResponsiblePerson)}</td>
+          <td><button class="btn secondary" onclick="editTool('${safe(tool.ToolID)}')">แก้ไข</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderMasterOptions() {
+      const categoryOptions = masterData.categories.map(item => `<option value="${safe(item.CategoryName)}">${safe(item.CategoryName)}</option>`).join('');
+      const locationOptions = masterData.locations.map(item => `<option value="${safe(item.LocationName)}">${safe(item.LocationName)}</option>`).join('');
+      document.getElementById('toolCategory').innerHTML = categoryOptions;
+      document.getElementById('toolLocation').innerHTML = locationOptions;
+    }
+
+    function renderToolOptions() {
+      const options = tools.map(tool => `<option value="${safe(tool.ToolID)}">${safe(tool.ToolID)} - ${safe(tool.ToolName)}</option>`).join('');
+      document.getElementById('maintenanceToolID').innerHTML = options;
+      document.getElementById('calibrationToolID').innerHTML = options;
+    }
+
+    function openToolModal() {
+      clearToolForm();
+      document.getElementById('toolModalTitle').textContent = 'เพิ่มเครื่องมือ';
+      document.getElementById('toolModal').style.display = 'flex';
+    }
+
+    function closeToolModal() {
+      document.getElementById('toolModal').style.display = 'none';
+    }
+
+    function editTool(toolId) {
+      const tool = tools.find(item => item.ToolID === toolId);
+      if (!tool) return;
+
+      document.getElementById('toolModalTitle').textContent = 'แก้ไขเครื่องมือ';
+      document.getElementById('toolId').value = tool.ToolID || '';
+      document.getElementById('toolName').value = tool.ToolName || '';
+      document.getElementById('toolCategory').value = tool.Category || '';
+      document.getElementById('toolBrand').value = tool.Brand || '';
+      document.getElementById('toolModel').value = tool.Model || '';
+      document.getElementById('toolSerialNo').value = tool.SerialNo || '';
+      document.getElementById('toolLocation').value = tool.Location || '';
+      document.getElementById('toolStatus').value = tool.Status || 'พร้อมใช้งาน';
+      document.getElementById('responsiblePerson').value = tool.ResponsiblePerson || '';
+      document.getElementById('purchaseDate').value = toInputDate(tool.PurchaseDate);
+      document.getElementById('warrantyExpireDate').value = toInputDate(tool.WarrantyExpireDate);
+      document.getElementById('imageFileID').value = tool.ImageFileID || '';
+      document.getElementById('manualFileID').value = tool.ManualFileID || '';
+      document.getElementById('toolNote').value = tool.Note || '';
+      document.getElementById('toolModal').style.display = 'flex';
+    }
+
+    function clearToolForm() {
+      document.getElementById('toolId').value = '';
+      document.getElementById('toolName').value = '';
+      document.getElementById('toolBrand').value = '';
+      document.getElementById('toolModel').value = '';
+      document.getElementById('toolSerialNo').value = '';
+      document.getElementById('toolStatus').value = 'พร้อมใช้งาน';
+      document.getElementById('responsiblePerson').value = '';
+      document.getElementById('purchaseDate').value = '';
+      document.getElementById('warrantyExpireDate').value = '';
+      document.getElementById('imageFileID').value = '';
+      document.getElementById('manualFileID').value = '';
+      document.getElementById('toolNote').value = '';
+      document.getElementById('toolFormStatus').textContent = '';
+    }
+
+    function saveTool() {
+      const data = {
+        ToolID: document.getElementById('toolId').value,
+        ToolName: document.getElementById('toolName').value,
+        Category: document.getElementById('toolCategory').value,
+        Brand: document.getElementById('toolBrand').value,
+        Model: document.getElementById('toolModel').value,
+        SerialNo: document.getElementById('toolSerialNo').value,
+        Location: document.getElementById('toolLocation').value,
+        Status: document.getElementById('toolStatus').value,
+        ResponsiblePerson: document.getElementById('responsiblePerson').value,
+        PurchaseDate: document.getElementById('purchaseDate').value,
+        WarrantyExpireDate: document.getElementById('warrantyExpireDate').value,
+        ImageFileID: document.getElementById('imageFileID').value,
+        ManualFileID: document.getElementById('manualFileID').value,
+        Note: document.getElementById('toolNote').value
+      };
+
+      if (!data.ToolName) {
+        document.getElementById('toolFormStatus').textContent = 'กรุณากรอกชื่อเครื่องมือ';
+        return;
+      }
+
+      const action = data.ToolID ? 'updateTool' : 'addTool';
+      document.getElementById('toolFormStatus').textContent = 'กำลังบันทึก...';
+
+      google.script.run.withSuccessHandler(() => {
+        document.getElementById('toolFormStatus').textContent = 'บันทึกเรียบร้อย';
+        closeToolModal();
+        loadAll();
+      })[action](data);
+    }
+
+    function saveMaintenance() {
+      const data = {
+        ToolID: document.getElementById('maintenanceToolID').value,
+        Date: document.getElementById('maintenanceDate').value,
+        Type: document.getElementById('maintenanceType').value,
+        Description: document.getElementById('maintenanceDescription').value,
+        Cost: document.getElementById('maintenanceCost').value,
+        Vendor: document.getElementById('maintenanceVendor').value,
+        NextMaintenanceDate: document.getElementById('nextMaintenanceDate').value,
+        FileID: document.getElementById('maintenanceFileID').value
+      };
+
+      document.getElementById('maintenanceStatus').textContent = 'กำลังบันทึก...';
+      google.script.run.withSuccessHandler(() => {
+        document.getElementById('maintenanceStatus').textContent = 'บันทึกเรียบร้อย';
+        loadAll();
+      }).addMaintenanceRecord(data);
+    }
+
+    function saveCalibration() {
+      const data = {
+        ToolID: document.getElementById('calibrationToolID').value,
+        CalibrationDate: document.getElementById('calibrationDate').value,
+        ExpireDate: document.getElementById('expireDate').value,
+        Result: document.getElementById('calibrationResult').value,
+        CertificateNo: document.getElementById('certificateNo').value,
+        CertificateFileID: document.getElementById('certificateFileID').value,
+        CalibratedBy: document.getElementById('calibratedBy').value
+      };
+
+      document.getElementById('calibrationStatus').textContent = 'กำลังบันทึก...';
+      google.script.run.withSuccessHandler(() => {
+        document.getElementById('calibrationStatus').textContent = 'บันทึกเรียบร้อย';
+        loadAll();
+      }).addCalibrationRecord(data);
+    }
+
+    function toInputDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toISOString().slice(0, 10);
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (isNaN(date.getTime())) return value;
+      return date.toLocaleDateString('th-TH');
+    }
+
+    function safe(value) {
+      return value === undefined || value === null ? '' : String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
+    }
+  </script>
+</body>
+</html>

@@ -4,30 +4,28 @@
 
 ## Version
 
-v1.0.0
+v1.0.7
 
 ## Features
 
-- Dashboard สรุปจำนวนเครื่องมือ
-- ทะเบียนเครื่องมือ
-- เพิ่มและแก้ไขข้อมูลเครื่องมือ
-- บันทึกประวัติซ่อมบำรุง
-- บันทึกประวัติสอบเทียบ
-- แจ้งเตือนใบสอบเทียบและกำหนดซ่อมบำรุงใกล้ครบกำหนด
-- เก็บ File ID สำหรับรูป คู่มือ เอกสารซ่อม และใบสอบเทียบ
+- Dashboard สรุปจำนวนและสถานะเครื่องมือ
+- รายการเครื่องมือ พร้อมเพิ่มและแก้ไขข้อมูลผ่าน popup
+- เก็บรูป คู่มือ และเอกสารแนบด้วย Google Drive File ID
+- รายการบันทึกการซ่อมบำรุงและการสอบเทียบในตาราง `ServiceRecords`
+- Popup สำหรับบันทึกงาน Maintenance, Repair, Calibration, Verification และ Other
+- ค้นหาและกรองรายการบันทึกตามเครื่องมือและประเภทงาน
 
 ## Files
 
 - `Code.gs` - โค้ดหลักฝั่ง Google Apps Script
-- `Index.html` - หน้า dashboard
+- `Index.html` - หน้า dashboard และแบบฟอร์ม
 - `database-schema.md` - โครงสร้าง Google Sheet
 - `CHANGELOG.md` - ประวัติการเปลี่ยนแปลง
 
 ## Google Sheet Tabs
 
 - Tools
-- MaintenanceRecords
-- CalibrationRecords
+- ServiceRecords
 - Categories
 - Locations
 - Users
